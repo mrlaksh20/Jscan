@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+target="$1"
+mode="$2"
+
+if [[ -z "$target" ]]; then
+    echo "  n is normal mode, s is strict mode forto crawl specific path like this: https://target.com/webpage/,choose 'n' when strict mode not needed  "
+    echo "  Usage: jscan <url>  n (or) s  "
+    exit 1
+fi
+
+if [[ -z "$mode" ]]; then
+    mode="normal"
+fi
+
+domain=$(echo "$target" | sed 's~https\?://~~' | sed 's~/.*~~')
+outfile="${domain}_js.txt"
+resultfile="${domain}_spidey_results.txt"
+
+echo "[*] Crawling JS URLs using katana..."
+echo "[*] Mode: $mode"
+
+# ---------- KATANA MODES ----------
+if [[ "$mode" == "s" ]]; then
+    echo "[*] Using strict crawl scope: -cs $target"
+    katana -u "$target" -jc -cs "^$target"  -silent | grep -Ei '/[^/]+\.(js|json)([?#].*)?$' | tee "$outfile"
+else
+    echo "[*] Using normal full-site crawl"
+    katana -u "$target" -jc -silent | grep -Ei '/[^/]+\.(js|json)([?#].*)?$' | tee "$outfile"
+fi
+# ----------------------------------
+
+# Extract only JS URLs from katana output
+
+echo "[*] Saved JS URLs to: $outfile"
+
+count=$(wc -l < "$outfile")
+echo "[*] JS URLs found: $count"
+
+if (( count > 1 )); then
+    echo "[*] Running Spidey scanner..."
+    spidey -f "$outfile" | tee "$resultfile"
+    echo "[*] Spidey output saved to: $resultfile"
+else
+    echo "[!] Not enough URLs (need >1). Skipping Spidey scan."
+fi
