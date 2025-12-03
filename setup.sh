@@ -36,6 +36,7 @@ else
    echo "katana is alredy installed"
 fi
 
+go mod tidy
 echo "[*] Building Spidey..."
 go build -o spidey spidey.go
 
