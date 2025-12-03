@@ -16,7 +16,7 @@ import (
 )
 
 const (
-    maxConcurrency = 10
+    maxConcurrency = 1
     requestTimeout = 15 * time.Second
   // Scan up to 2MB per response (optional safety)
 )
@@ -36,9 +36,6 @@ var regexes = map[string]*regexp.Regexp{
 	"authorization_bearer": regexp.MustCompile(`(?i)bearer [a-zA-Z0-9_\-\.=:_\+\/]{5,100}`),
 	"authorization_api": regexp.MustCompile(`(?i)api[key|_key|\s+]+[a-zA-Z0-9_\-]{5,100}`),
 	"mailgun_api_key": regexp.MustCompile(`(?i)key-[0-9a-zA-Z]{32}`),
-	"twilio_api_key": regexp.MustCompile(`(?i)SK[0-9a-fA-F]{32}`),
-	"twilio_account_sid": regexp.MustCompile(`(?i)AC[a-zA-Z0-9_\-]{32}`),
-	"twilio_app_sid": regexp.MustCompile(`(?i)AP[a-zA-Z0-9_\-]{32}`),
 	"paypal_braintree_access_token": regexp.MustCompile(`(?i)access_token\$production\$[0-9a-z]{16}\$[0-9a-f]{32}`),
 	"square_oauth_secret": regexp.MustCompile(`(?i)sq0csp-[0-9A-Za-z\-_]{43}|sq0[a-z]{3}-[0-9A-Za-z\-_]{22,43}`),
 	"square_access_token": regexp.MustCompile(`(?i)sqOatp-[0-9A-Za-z\-_]{22}|EAAA[a-zA-Z0-9]{60}`),
@@ -133,15 +130,12 @@ var regexes = map[string]*regexp.Regexp{
 	"Stripe Webhook Secret": regexp.MustCompile(`(?i)whsec_[0-9a-zA-Z]{24}`),
 	"Square OAuth Secret": regexp.MustCompile(`(?i)sq0csp-[0-9A-Za-z\-_]{43}`),
 	"Telegram Bot API Key": regexp.MustCompile(`(?i)[0-9]+:AA[0-9A-Za-z\-_]{33}`),
-	"Twilio Account SID": regexp.MustCompile(`(?i)AC[0-9a-fA-F]{32}`),
-	"Twilio Auth Token": regexp.MustCompile(`(?i)TW[0-9a-fA-F]{32}`),
 	"Github Auth Creds": regexp.MustCompile(`(?i)https://[a-zA-Z0-9]{40}@github\.com`),
 	"Google Gmail API Key": regexp.MustCompile(`(?i)AIza[0-9A-Za-z\-_]{35}`),
 	"Google Gmail OAuth": regexp.MustCompile(`(?i)[0-9]+-[0-9A-Za-z_]{32}\.apps\.googleusercontent\.com`),
 	"Google OAuth Access Token": regexp.MustCompile(`(?i)ya29\.[0-9A-Za-z\-_]+`),
 	"Google YouTube API Key": regexp.MustCompile(`(?i)AIza[0-9A-Za-z\-_]{35}`),
 	"Google YouTube OAuth": regexp.MustCompile(`(?i)[0-9]+-[0-9A-Za-z_]{32}\.apps\.googleusercontent\.com`),
-	"Twitter OAuth": regexp.MustCompile(`(?i)(twitter.*['"][0-9a-z]{35,44}['"]|https:\/\/[0-9a-z]{40}@(api\.)?twitter\.com(\/2(\/[1-9]|\/10)?)?)`),
 	"Apr1 MD5": regexp.MustCompile(`(?i)\$apr1\$[a-zA-Z0-9_/\.]{8}\$[a-zA-Z0-9_/\.]{22}`),
 	"MD5": regexp.MustCompile(`(?i)[a-f0-9]{32}`),
 	"MD5 or SHA1": regexp.MustCompile(`(?i)[a-f0-9]{32}|[a-f0-9]{40}`),
@@ -336,7 +330,6 @@ var regexes = map[string]*regexp.Regexp{
 	"Possible Leak - Urban Key": regexp.MustCompile(`(?i)[\"']?urban[_-]?key[\"']?[^\S\r\n]*[=:][^\S\r\n]*[\"']?[\w-]+[\"']?`),
 	"Possible Leak - Unity Serial": regexp.MustCompile(`(?i)[\"']?unity[_-]?serial[\"']?[^\S\r\n]*[=:][^\S\r\n]*[\"']?[\w-]+[\"']?`),
 	"Possible Leak - Unity Password": regexp.MustCompile(`(?i)[\"']?unity[_-]?password[\"']?[^\S\r\n]*[=:][^\S\r\n]*[\"']?[\w-]+[\"']?`),
-	"Possible Leak - Twitter Leaks": regexp.MustCompile(`(?i)["']?twitter(?:oauthaccesstoken|oauthaccesssecret|[_-]?consumer[_-]?(?:secret|key))["']?\s*[=:]\s*["']?[\w-]+["']?`),
 	"Possible Leak - VSCE Token": regexp.MustCompile(`(?i)[\"']?vscetoken[\"']?[^\S\r\n]*[=:][^\S\r\n]*[\"']?[\w-]+[\"']?`),
 	"Possible Leak - Visual Recognition API Key": regexp.MustCompile(`(?i)[\"']?visual[_-]?recognition[_-]?api[_-]?key[\"']?[^\S\r\n]*[=:][^\S\r\n]*[\"']?[\w-]+[\"']?`),
 	"Possible Leak - VirusTotal API Key": regexp.MustCompile(`(?i)[\"']?virustotal[_-]?apikey[\"']?[^\S\r\n]*[=:][^\S\r\n]*[\"']?[\w-]+[\"']?`),
@@ -395,7 +388,6 @@ var regexes = map[string]*regexp.Regexp{
 	"Possible Leak - Stormpath API Key ID": regexp.MustCompile(`(?i)[\"']?stormpath[_-]?api[_-]?key[_-]?id[\"']?[^\S\r\n]*[=:][^\S\r\n]*[\"']?[\w-]+[\"']?`),
 	"Possible Leak - LinkedIn Leaks": regexp.MustCompile(`(?i)["']?linkedin[_-]?(?:secret[_-]?(?:id|secret|api[_-]?key[_-]?(?:id|priv[_-]?key))|token[_-]?(?:id|secret|api[_-]?key[_-]?id|api[_-]?key[_-]?priv[_-]?key|auth[_-]?token)|auth[_-]?(?:id|secret|api[_-]?key[_-]?id))["']?\s*[=:]\s*["']?[\w-]+["']?`),
 	"Possible Leak - Azure Leaks": regexp.MustCompile(`(?i)["']?azure[_-]?(?:secret[_-]?(?:id|secret|api[_-]?key[_-]?(?:id|priv[_-]?key))|token[_-]?(?:id|secret|api[_-]?key[_-]?(?:id|secret|apikey|password|token|auth[_-]?key|pub[_-]?key|priv[_-]?key))|auth[_-]?(?:id|secret|api[_-]?key[_-]?(?:id|secret|apikey|password|token|auth[_-]?key|pub[_-]?key|priv[_-]?key)))["']?\s*[=:]\s*["']?[\w-]+["']?`),
-	"Possible Leak - Twilio Leaks": regexp.MustCompile(`(?i)["']?twilio[_-]?(?:token|sid|configuration[_-]?sid|chat[_-]?account[_-]?api[_-]?service|api[_-]?(?:secret|key))["']?\s*[=:]\s*["']?[\w-]+["']?`),
 	"Possible Leak - Trex Okta Client Token": regexp.MustCompile(`(?i)[\"']?trex[_-]?okta[_-]?client[_-]?token[\"']?[^\S\r\n]*[=:][^\S\r\n]*[\"']?[\w-]+[\"']?`),
 	"Possible Leak - Trex Client Token": regexp.MustCompile(`(?i)[\"']?trex[_-]?client[_-]?token[\"']?[^\S\r\n]*[=:][^\S\r\n]*[\"']?[\w-]+[\"']?`),
 	"Possible Leak - Travis Leaks": regexp.MustCompile(`(?i)["']?travis[_-]?(?:token|secure[_-]?env[_-]?vars|pull[_-]?request|gh[_-]?token|e2e[_-]?token|com[_-]?token|branch|api[_-]?token|access[_-]?token)["']?\s*[=:]\s*["']?[\w-]+["']?`),
@@ -480,8 +472,6 @@ var regexes = map[string]*regexp.Regexp{
 	"Possible Leak - Rinkeby Private Key": regexp.MustCompile(`(?i)[\"']?rinkeby[-_]?private[-_]?key[\"']?[^\S\r\n]*[=:][^\S\r\n]*[\"']?[\w-]+[\"']?`),
 	"Possible Leak - REST API Key": regexp.MustCompile(`(?i)[\"']?rest[-_]?api[-_]?key[\"']?[^\S\r\n]*[=:][^\S\r\n]*[\"']?[\w-]+[\"']?`),
 	"Possible Leak - YouTube API Key Token":regexp.MustCompile(`(?i)["']?youtube[_-]?(?:secret[_-]?api[_-]?key[_-]?(?:token|auth[_-]?key|pub[_-]?key|priv[_-]?key)|token[_-]?(?:id|secret|api[_-]?key[_-]?(?:id|secret|apikey)))["']?\s*[=:]\s*["']?[\w-]+["']?`),
-	"Possible Leak - Twitter Auth API Key Priv Key": regexp.MustCompile(`(?i)[\"']?twitter[_-]?auth[_-]?api[_-]?key[_-]?priv[_-]?key[\"']?[^\S\r\n]*[=:][^\S\r\n]*[\"']?[\w-]+[\"']?`),
-	"Possible Leak - Twitter Token Auth Token": regexp.MustCompile(`(?i)[\"']?twitter[_-]?token[_-]?auth[_-]?token[\"']?[^\S\r\n]*[=:][^\S\r\n]*[\"']?[\w-]+[\"']?`),
 	"Possible Leak - GitLab Secret ID": regexp.MustCompile(`(?i)[\"']?gitlab[_-]?secret[_-]?id[\"']?[^\S\r\n]*[=:][^\S\r\n]*[\"']?[\w-]+[\"']?`),
 	"Possible Leak - GitLab Secret Secret": regexp.MustCompile(`(?i)[\"']?gitlab[_-]?secret[_-]?secret[\"']?[^\S\r\n]*[=:][^\S\r\n]*[\"']?[\w-]+[\"']?`),
 	"Possible Leak - GitLab Auth API Key Auth Key": regexp.MustCompile(`(?i)[\"']?gitlab[_-]?auth[_-]?api[_-]?key[_-]?auth[_-]?key[\"']?[^\S\r\n]*[=:][^\S\r\n]*[\"']?[\w-]+[\"']?`),
@@ -503,8 +493,6 @@ var regexes = map[string]*regexp.Regexp{
 	"AWS Access Key": regexp.MustCompile(`(?i)(A3T[A-Z0-9]|AKIA|ACCA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA|ASCA|APKA)[A-Z0-9]{16}`),
 	"AWS Secret Key": regexp.MustCompile(`(?i)aws(.{0,20})?(?-i)['\"][0-9a-zA-Z\/+]{40}['\"]`),
 	"Twitch API token": regexp.MustCompile("(?i)twitch[0-9a-z_\\-\\t .]{0,20}['\"\\s]{0,3}(=|>|:=|\\|\\|:|<=|=>|:)[='\"`\\s]{0,5}([a-z0-9]{30})['\"\\n\\r\\s`;]|$"),
-	"Twitter Access Secret": regexp.MustCompile("(?i)twitter[0-9a-z_\\-\\t .]{0,20}['\"\\s]{0,3}(=|>|:=|\\|\\|:|<=|=>|:)[='\"`\\s]{0,5}([a-z0-9]{45})['\"\\n\\r\\s`;]|$"),
-	"Twitter Bearer Token": regexp.MustCompile("(?i)twitter[0-9a-z_\\-\\t .]{0,20}['\"\\s]{0,3}(=|>|:=|\\|\\|:|<=|=>|:)[='\"`\\s]{0,5}(A{22}[a-zA-Z0-9%]{80,100})['\"\\n\\r\\s`;]|$"),
 	"Typeform API token": regexp.MustCompile("(?i)typeform[0-9a-z_\\-\\t .]{0,20}['\"\\s]{0,3}(=|>|:=|\\|\\|:|<=|=>|:)[='\"`\\s]{0,5}(tfp_[a-z0-9\\-_.]{59})['\"\\n\\r\\s`;]|$"),
 	"Vault Batch Token": regexp.MustCompile("(?i)(hvb\\.[a-z0-9_-]{138,212})['\"\\n\\r\\s`;]|$"),
 	"Vault Service Token": regexp.MustCompile("(?i)(hvs\\.[a-z0-9_-]{90,100})['\"\\n\\r\\s`;]|$"),
@@ -526,7 +514,23 @@ var regexes = map[string]*regexp.Regexp{
 
 // -------- MAIN STARTS HERE --------
 func main() {
-    filePath := flag.String("f", "", "Path to file containing URLs (one per line)")
+ func printBanner() {
+    red := "\033[1;91m"
+    bold := "\033[1m"
+    cyan := "\033[36m"
+    reset := "\033[0m"
+
+    fmt.Println(red + `
+        ░░      ░░░       ░░░        ░░       ░░░        ░░  ░░░░  ░
+        ▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒  ▒▒▒▒▒  ▒▒▒▒▒  ▒▒▒▒  ▒▒  ▒▒▒▒▒▒▒▒▒  ▒▒  ▒▒
+        ▓▓      ▓▓▓       ▓▓▓▓▓▓  ▓▓▓▓▓  ▓▓▓▓  ▓▓      ▓▓▓▓▓▓    ▓▓▓
+        ███████  ██  ███████████  █████  ████  ██  ███████████  ████
+        ██      ███  ████████        ██       ███        █████  ████
+
+                   ` + bold + "[>]" + cyan + " MARK-12" + reset + "\n")
+   }
+  
+  filePath := flag.String("f", "", "Path to file containing URLs (one per line)")
     flag.Parse()
 
     if *filePath == "" {
