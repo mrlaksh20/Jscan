@@ -25,18 +25,25 @@ grep -qxF 'export GOPATH=$HOME/go' "$RC_FILE" || echo 'export GOPATH=$HOME/go' >
 grep -qxF 'export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin' "$RC_FILE" || echo 'export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin' >> "$RC_FILE"
 echo "[*] Sourcing $RC_FILE"
 source "$RC_FILE"
-chmod +x jscan
 sudo cp jscan /usr/local/bin/
+sudo chmod +x /usr/local/bin/jscan
 
 echo "[*] Installing katana..."
-go install github.com/projectdiscovery/katana/cmd/katana@latest
+if ! command -v katana > /dev/null 2>&1; then
+   echo "installing katana tool"
+   go install github.com/projectdiscovery/katana/cmd/katana@latest
+else
+   echo "katana is alredy installed"
+fi
 
 echo "[*] Building Spidey..."
 go build -o spidey spidey.go
 
 echo "[*] Moving spidey binary to /usr/local/bin..."
-sudo mv spidey /usr/local/bin/
+sudo cp spidey /usr/local/bin/
 sudo chmod +x /usr/local/bin/spidey
 
 echo "[✔] Installation complete! Spidey is now available system-wide."
+echo "usage :  jscan https://target.com  n "
+
 
