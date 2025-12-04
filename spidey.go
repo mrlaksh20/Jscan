@@ -512,8 +512,7 @@ var regexes = map[string]*regexp.Regexp{
 	"Asymmetric Private Key": regexp.MustCompile(`(?i)-----BEGIN ((EC|PGP|DSA|RSA|OPENSSH) )?PRIVATE KEY( BLOCK)?-----`),
 }
 
-// -------- MAIN STARTS HERE --------
-func main() {
+//--------- Banner ---------
  func printBanner() {
     red := "\033[1;91m"
     bold := "\033[1m"
@@ -528,8 +527,9 @@ func main() {
         ██      ███  ████████        ██       ███        █████  ████
 
                    ` + bold + "[>]" + cyan + " MARK-12" + reset + "\n")
-   }
-  
+}
+// -------- MAIN STARTS HERE --------
+func main() {
   filePath := flag.String("f", "", "Path to file containing URLs (one per line)")
     flag.Parse()
 
